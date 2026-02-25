@@ -1,0 +1,15 @@
+# Terrafom
+*.tfstate
+*.tfstate.backup
+.terraform
+
+# Python
+.venv/
+
+# Openstack
+openrc*.sh
+clouds.yaml
+
+# Ansible
+inventory.ini
+
