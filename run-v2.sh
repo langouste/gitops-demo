@@ -26,7 +26,6 @@ echo "🌐 Étape 4 : Déploiement des Stacks Docker..."
 cd docker
 export DOCKER_HOST=ssh://ubuntu@$NODE_IP
 docker stack deploy -c traefik-stack.yml traefik
-docker stack deploy -c app-whoami-stack.yml whoami
 unset DOCKER_HOST
 cd -
 
