@@ -74,7 +74,6 @@ snap install --classic opentofu
 ```
 
 
-
 ### 2. Configuration du Backend S3 (Remote State)
 
 Pour partager l'état de l'infrastructure (`.tfstate`), nous utilisons l'Object Storage d'OVHcloud. Si le bucket n'existe pas encore :

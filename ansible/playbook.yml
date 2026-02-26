@@ -42,8 +42,21 @@
       shell: docker swarm init --advertise-addr {{ ansible_host }}
       register: swarm_init
       failed_when: false # Évite l'erreur si déjà initialisé
+    
+    # --- STACK TRAEFIK ---
+    - name: Générer le fichier de stack Traefik
+      ansible.builtin.template:
+        src: ./templates/traefik-stack.yml.j2
+        dest: /home/ubuntu/traefik-stack.yml
 
-    - name: Générer le fichier de stack avec l'IP dynamique
+    - name: Déployer la stack Traefik
+      shell: docker stack deploy -c /home/ubuntu/traefik-stack.yml traefik
+
+    # --- STACK WHOAMI ---
+    - name: Générer le fichier de stack Whoami avec l'IP dynamique
       ansible.builtin.template:
         src: ./templates/app-whoami-stack.yml.j2
         dest: /home/ubuntu/app-whoami-stack.yml
+    
+    - name: Déployer la stack Whoami
+      shell: docker stack deploy -c /home/ubuntu/app-whoami-stack.yml whoami
