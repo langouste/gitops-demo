@@ -73,6 +73,15 @@ snap install --classic opentofu
 
 ```
 
+* **Ansible Galaxy**
+```bash
+# Installation de la collection docker
+ansible-galaxy collection install community.docker
+# Jq for dynamic inventory
+sudo apt install jq
+```
+
+
 
 ### 2. Configuration du Backend S3 (Remote State)
 

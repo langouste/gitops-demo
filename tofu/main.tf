@@ -25,10 +25,10 @@ resource "openstack_compute_keypair_v2" "tp_key" {
 # Instance VM
 resource "openstack_compute_instance_v2" "vm_tp" {
   name            = "vm-castellengo"
+  count           = 2  # Crée 2 VMs : vm_tp.0 et vm_tp.1
   image_name      = "Ubuntu 24.04"
   flavor_name     = "d2-2" # Instance légère
   key_pair        = openstack_compute_keypair_v2.tp_key.name
-  # On référence le nom du groupe networking créé plus haut
   security_groups = ["default"]
 
   network {
@@ -36,6 +36,6 @@ resource "openstack_compute_instance_v2" "vm_tp" {
   }
 }
 
-output "instance_ip" {
-  value       = openstack_compute_instance_v2.vm_tp.network[0].fixed_ip_v4
+output "instances_ips" {
+  value = openstack_compute_instance_v2.vm_tp[*].access_ip_v4
 }

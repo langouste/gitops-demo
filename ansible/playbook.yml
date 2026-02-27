@@ -37,12 +37,43 @@
         name: ubuntu
         groups: docker
         append: yes
-
-    - name: Initialiser le Swarm
-      shell: docker swarm init --advertise-addr {{ ansible_host }}
-      register: swarm_init
-      failed_when: false # Évite l'erreur si déjà initialisé
     
+    - name: Installation de python3-docker (requis pour les modules Ansible)
+      apt:
+        name: python3-docker
+        state: present
+        update_cache: yes
+      tags:
+        - swarm
+    
+- hosts: manager
+  become: yes
+  tasks:
+    - name: Init Swarm
+      community.general.docker_swarm:
+        state: present
+      register: swarm_info
+
+    - name: Sauvegarder le Join Token Worker
+      set_fact:
+        worker_token: "{{ swarm_info.swarm_facts.JoinTokens.Worker }}"
+
+- hosts: workers
+  become: yes
+  vars:
+    # On récupère le token depuis la mémoire du groupe manager
+    manager_ip: "{{ hostvars[groups['manager'][0]]['ansible_host'] }}"
+    token: "{{ hostvars[groups['manager'][0]]['worker_token'] }}"
+  tasks:
+    - name: Join Swarm
+      community.general.docker_swarm:
+        state: join
+        join_token: "{{ token }}"
+        remote_addrs: [ "{{ manager_ip }}:2377" ]
+    
+- hosts: manager
+  become: yes
+  tasks:
     # --- STACK TRAEFIK ---
     - name: Générer le fichier de stack Traefik
       ansible.builtin.template:

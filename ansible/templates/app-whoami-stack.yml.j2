@@ -6,6 +6,7 @@ services:
     networks:
       - traefik_traefik_proxy
     deploy:
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.whoami.rule=Host(`whoami.{{ ansible_host }}.traefik.me`)"
