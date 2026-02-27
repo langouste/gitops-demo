@@ -1,4 +1,15 @@
 ---
+- name: Wait for SSH
+  hosts: all
+  gather_facts: no # Très important car on ne peut pas encore collecter les facts
+  tasks:
+    - name: Wait for port 22 to become available
+      delegate_to: localhost
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 22
+        timeout: 300
+
 - hosts: all
   become: yes
   tasks:
