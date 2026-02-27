@@ -45,7 +45,40 @@
         update_cache: yes
       tags:
         - swarm
+
+    - name: Installer nfs-common
+      apt:
+        name: nfs-common
+        state: present 
+
+- name: Configurer le serveur NFS sur le Manager
+  hosts: manager
+  become: yes
+  tasks:
+    - name: Installer le serveur NFS
+      apt:
+        name: nfs-kernel-server
+        state: present
+
+    - name: Créer le dossier partagé pour Etherpad
+      file:
+        path: /var/nfs/etherpad_data
+        state: directory
+        mode: '0777'
+
+    - name: Configurer les exports NFS
+      lineinfile:
+        path: /etc/exports
+        line: "/var/nfs/etherpad_data *(rw,sync,no_subtree_check,no_root_squash)"
+      notify: Restart NFS
+
+  handlers:
+    - name: Restart NFS
+      service:
+        name: nfs-kernel-server
+        state: restarted
     
+
 - hosts: manager
   become: yes
   tasks:
@@ -74,7 +107,7 @@
 - hosts: manager
   become: yes
   tasks:
-    # --- STACK TRAEFIK ---
+    # --- Stack Traefik ---
     - name: Générer le fichier de stack Traefik
       ansible.builtin.template:
         src: ./templates/traefik-stack.yml.j2
@@ -83,7 +116,7 @@
     - name: Déployer la stack Traefik
       shell: docker stack deploy -c /home/ubuntu/traefik-stack.yml traefik
 
-    # --- STACK WHOAMI ---
+    # --- Stack Whoami ---
     - name: Générer le fichier de stack Whoami avec l'IP dynamique
       ansible.builtin.template:
         src: ./templates/app-whoami-stack.yml.j2
@@ -91,3 +124,12 @@
     
     - name: Déployer la stack Whoami
       shell: docker stack deploy -c /home/ubuntu/app-whoami-stack.yml whoami
+
+    # --- Stack Ehterpad ---
+    - name: Générer le fichier de stack Ehterpad avec les IPs dynamiques
+      ansible.builtin.template:
+        src: ./templates/app-etherpad-stack.yml.j2
+        dest: /home/ubuntu/app-etherpad-stack.yml
+    
+    - name: Déployer la stack Ehterpad
+      shell: docker stack deploy -c /home/ubuntu/app-etherpad-stack.yml etherpad

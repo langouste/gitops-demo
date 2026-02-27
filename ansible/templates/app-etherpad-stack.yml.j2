@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  etherpad:
+    image: etherpad/etherpad:latest
+    networks:
+      - traefik_traefik_proxy
+    environment:
+      - NODE_ENV=production
+      - DB_TYPE=dirty
+    volumes:
+      - etherpad-data:/opt/etherpad-lite/var
+    deploy:
+      replicas: 1 
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.ghost.rule=Host(`pad.{{ ansible_host }}.sslip.io`)"
+        - "traefik.http.routers.ghost.entrypoints=web"
+        #- "traefik.http.routers.ghost.tls.certresolver=myresolver"
+        - "traefik.http.services.pad.loadbalancer.server.port=9001"
+
+networks:
+  traefik_traefik_proxy:
+    external: true
+
+volumes:
+  etherpad-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr={{ ansible_host }},nolock,soft,rw"
+      device: ":/var/nfs/etherpad_data"
